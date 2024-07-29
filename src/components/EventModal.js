@@ -1,14 +1,11 @@
 import React, { useContext, useState } from "react";
+import { Range, getTrackBackground } from "react-range";
 import GlobalContext from "../context/GlobalContext";
 
-const labelsClasses = [
-  "indigo",
-  "gray",
-  "green",
-  "blue",
-  "red",
-  "purple",
-];
+const labelsClasses = ["indigo", "gray", "green", "blue", "red", "purple"];
+const STEP = 15;
+const MIN = 0;
+const MAX = 1440;
 
 export default function EventModal() {
   const {
@@ -29,6 +26,19 @@ export default function EventModal() {
       ? labelsClasses.find((lbl) => lbl === selectedEvent.label)
       : labelsClasses[0]
   );
+  const [timeRange, setTimeRange] = useState(
+    selectedEvent
+      ? [selectedEvent.startTime, selectedEvent.endTime]
+      : [540, 600]
+  );
+
+  const formatTime = (minutes) => {
+    const h = Math.floor(minutes / 60);
+    const m = minutes % 60;
+    const period = h < 12 ? "AM" : "PM";
+    const formattedHour = h % 12 === 0 ? 12 : h % 12;
+    return `${formattedHour}:${m < 10 ? "0" + m : m} ${period}`;
+  };
 
   function handleSubmit(e) {
     e.preventDefault();
@@ -37,6 +47,8 @@ export default function EventModal() {
       description,
       label: selectedLabel,
       day: daySelected.valueOf(),
+      startTime: timeRange[0],
+      endTime: timeRange[1],
       id: selectedEvent ? selectedEvent.id : Date.now(),
     };
     if (selectedEvent) {
@@ -47,10 +59,17 @@ export default function EventModal() {
 
     setShowEventModal(false);
   }
+
+  function handleKeyDown(e) {
+    if (e.key === "Enter") {
+      handleSubmit(e);
+    }
+  }
+
   return (
     <div className="h-screen w-full fixed left-0 top-0 flex justify-center items-center">
-      <form className="bg-white rounded-lg shadow-2xl w-1/4">
-        <header className="bg-gray-100 px-4 py-2 flex justify-between items-center">
+      <form className="bg-gray-50 rounded-lg shadow-2xl w-auto justify-between items-center">
+        <header className="bg-blue-100 px-4 py-2 flex justify-between items-center">
           <span className="material-icons-outlined text-gray-400">
             drag_handle
           </span>
@@ -85,8 +104,9 @@ export default function EventModal() {
               placeholder="Add title"
               value={title}
               required
-              className="pt-3 border-0 text-gray-600 text-xl font-semibold pb-2 w-full border-b-2 border-gray-200 focus:outline-none focus:ring-0 focus:border-blue-500"
+              className="pt-3 border-0 text-gray-600 text-xl font-semibold pb-2 w-auto border-b-2 border-gray-200 focus:outline-none focus:ring-0 focus:border-blue-500"
               onChange={(e) => setTitle(e.target.value)}
+              onKeyDown={handleKeyDown}
             />
             <span className="material-icons-outlined text-gray-400">
               schedule
@@ -122,13 +142,61 @@ export default function EventModal() {
                 </span>
               ))}
             </div>
+            <span className="material-icons-outlined text-gray-400">
+              access_time
+            </span>
+            <div className="flex flex-col">
+              <Range
+                values={timeRange}
+                step={STEP}
+                min={MIN}
+                max={MAX}
+                onChange={(values) => setTimeRange(values)}
+                renderTrack={({ props, children }) => (
+                  <div
+                    {...props}
+                    style={{
+                      ...props.style,
+                      height: "6px",
+                      width: "100%",
+                      background: getTrackBackground({
+                        values: timeRange,
+                        colors: ["#ccc", "#548BF4", "#ccc"],
+                        min: MIN,
+                        max: MAX,
+                      }),
+                      borderRadius: "3px",
+                    }}
+                  >
+                    {children}
+                  </div>
+                )}
+                renderThumb={({ props }) => (
+                  <div
+                    {...props}
+                    style={{
+                      ...props.style,
+                      height: "16px",
+                      width: "16px",
+                      backgroundColor: "#FFF",
+                      border: "1px solid #ccc",
+                      borderRadius: "50%",
+                    }}
+                  />
+                )}
+              />
+              <div className="flex justify-between mt-2">
+                <span>{formatTime(timeRange[0])}</span>
+                <span>{formatTime(timeRange[1])}</span>
+              </div>
+            </div>
           </div>
         </div>
         <footer className="flex justify-end border-t p-3 mt-5">
           <button
             type="submit"
             onClick={handleSubmit}
-            className="bg-blue-500 hover:bg-blue-600 px-6 py-2 rounded text-white"
+            className="bg-blue-500 hover:bg-blue-100 px-6 py-2 rounded text-white"
           >
             Save
           </button>

@@ -1,3 +1,6 @@
+body {
+  transition: background-color 0.5s, color 0.5s;
+}
 .App {
   text-align: center;
 }
@@ -21,9 +24,36 @@
   align-items: center;
   justify-content: center;
   font-size: calc(10px + 2vmin);
+  color: rgb(255, 0, 0);
+}
+
+
+.light-mode {
+  background-color: white;
+  color: black;
+}
+
+.dark-mode {
+  background-color: rgb(32, 32, 32);
   color: white;
 }
 
+.theme-toggle-button {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  padding: 10px;
+  cursor: pointer;
+  z-index: 1000;
+  background: none;
+  border: none;
+  outline: none;
+  color: inherit;
+}
+
+.theme-toggle-button .material-icons {
+  font-size: 24px;
+}
 .App-link {
   color: #61dafb;
 }
